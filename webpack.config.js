@@ -1,8 +1,10 @@
 const path = require("path");
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin');
 
 module.exports = {
+  mode: 'production',
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -11,25 +13,34 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.scss/,
-        include: '/src/assets/scss/',
-        use: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
-          use: [
-            'css-loader',
-            'sass-loader',
-          ]
-        }),
+        test: /\.scss$/,
+        include: path.resolve(__dirname, 'src/assets/scss'),
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          'sass-loader',
+        ],
       }
     ]
   },
   plugins: [
-    new ExtractTextPlugin('style.css'),
     new HtmlWebpackPlugin({
-      inject: false,
-      hash: true,
-      template: 'src/index.html',
-      filename: 'index.html'
+      inject: 'head',
+      inlineSource: '.(js|css)$', // embed all javascript and css inline
+      templateContent: ``,
+      filename: 'index.html',
+      minify: {
+        removeAttributeQuotes: true,
+        collapseWhitespace: true,
+        html5: true,
+        minifyCSS: true,
+        removeComments: true,
+        removeEmptyAttributes: true,
+      }
     }),
+    new MiniCssExtractPlugin({
+      filename: 'style.css'
+    }),
+    new HtmlWebpackInlineSourcePlugin(),
   ]
 };
